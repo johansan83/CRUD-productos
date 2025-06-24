@@ -1,23 +1,50 @@
 import express from "express";
 import * as dotenv from "dotenv";
-//import * as dotenvSafe from "dotenv-safe";
+import * as dotenvSafe from "dotenv-safe";
+import cors from "cors";
+import productRouter from "./routes/products/productsRoutes";
+import LoggerMiddleware from "./middlewares/logger";
+import errorHandler from "./middlewares/errorHandler";
+import authenticateToken from './middlewares/auth';
 
-//dotenvSafe.config();
+dotenv.config();
+dotenvSafe.config();
 
-const port = parseInt(process.env.PORT as string, 10);
+const port = parseInt(process.env.PORT as string, 10) || 3000;
 const apiKey = process.env.API_KEY as string;
-
-console.log(port); // Output: the value of the PORT environment variable as a number
-console.log(apiKey); // Output: the value of the API_KEY environment variable
-
 const app = express();
+//const options: = process.env.CORS_OPTIONS;
 
+//app.use(cors(CORS_OPTIONS));
+// Middlewares
+app.use(LoggerMiddleware);
+app.use(express.json());
 
+// Rutas
+app.use('/products', productRouter);
 
-app.get("/", (req, res) => {
-  //res.status(200).json({ message: "Hello World" });
-  res.send("Imprimir en pantalla!");
+// Ruta de prueba para generar un error intencional
+app.get('/error',(req, res, next) => {
+  // Aquí usamos next() para pasar el error al siguiente middleware (el manejador de errores)
+  next(new Error('Error intencional'))
 });
+
+app.get('/profile', authenticateToken, (req: Request, res: Response) => {
+    // `req.user` debería ser reconocido correctamente ahora
+    if (req.user) {
+        return res.json({ user: req.user });
+    } else {
+        return res.status(403).json({ error: 'Usuario no autorizado' });
+    }
+});
+
+// Ruta principal
+app.get("/", (req, res) => {
+  res.send("Imprimir en pantalla");
+});
+
+// Middleware de manejo de errores (al final, después de todas las rutas)
+app.use(errorHandler);
 
 app.listen(port, () => {
   console.log(`App listening on http://localhost:${port}`);
