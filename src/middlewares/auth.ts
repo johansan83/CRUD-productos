@@ -1,33 +1,23 @@
-import jwt, { JwtPayload } from 'jsonwebtoken';
-import { Request, Response, NextFunction } from 'express';
-import * as dotenv from 'dotenv';
-import * as dotenvSafe from 'dotenv-safe';
+// src/middlewares/auth.ts
+import { Request, Response, NextFunction } from "express";
+import jwt, { JwtPayload } from "jsonwebtoken";
 
-dotenv.config();
-dotenvSafe.config();
-
-function authenticateToken(req: Request, res: Response, next: NextFunction) {
-    const token = req.header('Authorization')?.split(' ')[1];
-
-    if (!token) {
-        return res.status(401).json({ error: 'Acceso denegado, token no suministrado' });
+export default function authenticateToken(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void {
+  const token = req.header("Authorization")?.split(" ")[1];
+  if (!token) {
+    res.status(401).json({ error: "Token no suministrado" });
+    return;
+  }
+  jwt.verify(token, process.env.JWT_SECRET as string, (err, decoded) => {
+    if (err || typeof decoded !== "object") {
+      res.status(403).json({ error: "Token inválido" });
+      return;
     }
-
-    jwt.verify(token, process.env.JWT_SECRET as string, (error, decodedToken) => {
-        if (error) {
-            return res.status(403).json({ error: 'Token inválido' });
-        }
-
-        // Asegúrate de que decodedToken sea un JwtPayload y no una cadena
-        if (typeof decodedToken !== 'object' || !decodedToken) {
-            return res.status(403).json({ error: 'Token inválido' });
-        }
-
-        // Aquí estamos asegurando que decodedToken es un JwtPayload
-        req.user = decodedToken as JwtPayload;
-
-        next(); // Llamar al siguiente middleware
-    });
+    req.user = decoded as JwtPayload;
+    next();
+  });
 }
-
-export default authenticateToken;

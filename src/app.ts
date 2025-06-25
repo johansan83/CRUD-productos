@@ -1,10 +1,13 @@
+// app.ts
 import express from "express";
+import { Request, Response } from "express";
 import * as dotenv from "dotenv";
 import * as dotenvSafe from "dotenv-safe";
 import cors from "cors";
 import productRouter from "./routes/products/productsRoutes";
 import LoggerMiddleware from "./middlewares/logger";
 import errorHandler from "./middlewares/errorHandler";
+import authRouter from "./routes/auth/authRoutes";
 import authenticateToken from './middlewares/auth';
 
 dotenv.config();
@@ -29,13 +32,10 @@ app.get('/error',(req, res, next) => {
   next(new Error('Error intencional'))
 });
 
-app.get('/profile', authenticateToken, (req: Request, res: Response) => {
-    // `req.user` debería ser reconocido correctamente ahora
-    if (req.user) {
-        return res.json({ user: req.user });
-    } else {
-        return res.status(403).json({ error: 'Usuario no autorizado' });
-    }
+app.use("/auth", authRouter);
+
+app.get('/profile', authenticateToken, (req, res) => {
+  res.json({ user: req.user });
 });
 
 // Ruta principal

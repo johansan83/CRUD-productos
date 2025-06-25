@@ -22,13 +22,14 @@
     "cors": "^2.8.5",
     "dotenv-safe": "^9.1.0",
     "jsonwebtoken": "^9.0.2",
-    "mysql2": "^3.14.1"
+    "mysql2": "^3.14.1",
+    "tsx": "^4.20.3"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/dotenv-safe": "^8.1.6",
     "@types/express": "^5.0.3",
-    "@types/node": "^24.0.3",
+    "@types/node": "^24.0.4",
     "dotenv": "^16.5.0",
     "eslint": "^9.29.0",
     "express": "^5.1.0",

@@ -1,5 +1,5 @@
 // utils/validarProducto.ts
-import { Productos } from '../types/products';
+import { Productos } from '../types/product';
 
 export function esProductoValidoYUnico(
     producto: unknown,
