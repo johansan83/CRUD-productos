@@ -1,19 +1,17 @@
-import express from "express";
-const productRouter = express.Router();
+// src/routes/products/productsRoutes.ts
+import { Router } from "express";
 import ProductsController from "../../controllers/products/productsControllers";
+
+const productRouter = Router();
 const productController = new ProductsController();
-//import { Productos } from '../types/products';
-//import { esProductoValidoYUnico } from '../utils/validations';
 
+productRouter.get("/", productController.consultar);
+productRouter.post("/", productController.insertar);
 
-productRouter.get('/', productController.consultar);
-
-productRouter.post('/', productController.insertar);
-
-productRouter.route('/:id')
-    .get(productController.consultarDetalle)
-    .put(productController.actualizar)
-    .delete(productController.eliminar);
-
+productRouter
+  .route("/:id")
+  .get(productController.consultarDetalle)
+  .put(productController.actualizar)
+  .delete(productController.eliminar);
 
 export default productRouter;

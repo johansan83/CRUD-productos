@@ -8,7 +8,7 @@ import productRouter from "./routes/products/productsRoutes";
 import LoggerMiddleware from "./middlewares/logger";
 import errorHandler from "./middlewares/errorHandler";
 import authRouter from "./routes/auth/authRoutes";
-import authenticateToken from './middlewares/auth';
+import authenticateToken from "./middlewares/auth";
 
 dotenv.config();
 dotenvSafe.config();
@@ -24,17 +24,17 @@ app.use(LoggerMiddleware);
 app.use(express.json());
 
 // Rutas
-app.use('/products', productRouter);
+app.use("/products", productRouter);
 
 // Ruta de prueba para generar un error intencional
-app.get('/error',(req, res, next) => {
+app.get("/error", (req, res, next) => {
   // Aquí usamos next() para pasar el error al siguiente middleware (el manejador de errores)
-  next(new Error('Error intencional'))
+  next(new Error("Error intencional"));
 });
 
 app.use("/auth", authRouter);
 
-app.get('/profile', authenticateToken, (req, res) => {
+app.get("/profile", authenticateToken, (req, res) => {
   res.json({ user: req.user });
 });
 

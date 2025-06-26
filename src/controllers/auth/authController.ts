@@ -10,13 +10,11 @@ export default class AuthController {
   public async userLogin(req: Request, res: Response): Promise<void> {
     const { email, password } = req.body;
     try {
-      const [rows] = await conn.execute(
-        "SELECT * FROM users WHERE email = ?",
-        [email]
-      );
-      const user = Array.isArray(rows) && rows.length > 0
-        ? (rows[0] as any)
-        : null;
+      const [rows] = await conn.execute("SELECT * FROM users WHERE email = ?", [
+        email,
+      ]);
+      const user =
+        Array.isArray(rows) && rows.length > 0 ? (rows[0] as any) : null;
       if (!user) {
         res.status(401).json({ message: "Usuario no encontrado" });
         return;
@@ -26,11 +24,9 @@ export default class AuthController {
         res.status(403).json({ message: "Contraseña incorrecta" });
         return;
       }
-      const token = jwt.sign(
-        { id: user.id, email: user.email },
-        secret,
-        { expiresIn: "1h" }
-      );
+      const token = jwt.sign({ id: user.id, email: user.email }, secret, {
+        expiresIn: "1h",
+      });
       res.json({ token });
     } catch (error) {
       console.error("Error en login:", error);
