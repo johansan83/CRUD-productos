@@ -1,7 +1,10 @@
+// ─── src/config/db.ts
+
 import mysql, { PoolOptions } from 'mysql2/promise';
 import * as dotenv from "dotenv";
 import * as dotenvSafe from "dotenv-safe";
 
+// Carga variables de entorno (.env) y asegura que todas estén presentes.
 dotenv.config();
 dotenvSafe.config();
 
@@ -16,6 +19,11 @@ interface MySqlPoolOptions extends mysql.PoolOptions {
     queueLimit?: number;
 }
 
+/*
+ * Configuración de conexión al pool de MySQL.
+ * Lee parámetros del entorno y define valores por defecto
+ */
+
 const access: MySqlPoolOptions  = {
     host: process.env.DB_HOST || 'localhost',
     port: process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 3306,
@@ -27,6 +35,7 @@ const access: MySqlPoolOptions  = {
     queueLimit: 0,
 };
 
+// Crear pool de conexiones a MySQL
 const conn = mysql.createPool(access);
 
 export default conn;

@@ -1,19 +1,30 @@
+// ─── src/middlewares/logger.ts
+
 import { Request, Response, NextFunction } from 'express';
-import { timeStamp } from 'node:console';
 
-const timestamp: string = new Date().toLocaleString();
-
+/**
+ * Middleware de registro de peticiones HTTP.
+ * Registra método, ruta, IP del cliente, estado de respuesta y tiempo de ejecución.
+ */
 const LoggerMiddleware = (req: Request, res: Response, next: NextFunction) => {
-    console.log(`[${timestamp} ${req.method} ${req.url} - IP: ${req.ip} ]`);
+    // Timestamp al inicio de la petición para cada request
+    const timestampStart = new Date().toLocaleString();
 
-    const start = Date.now();
+    console.log(`[${timestampStart}] → ${req.method} ${req.url} - IP: ${req.ip}`);
 
-    res.on('finish',() => {
-        const duration = Date.now() - start;
-        console.log(`[${timestamp}] Response: ${res.statusCode} - ${duration}ms`)
-    })
+    // Marca de tiempo para medir duración
+    const startMs = Date.now();
 
-    next();
+    // Se ejecuta cuando la respuesta termina (headers enviados)
+    res.on('finish', () => {
+        const duration = Date.now() - startMs;
+        const status = res.statusCode;
+        const timestampEnd = new Date().toLocaleString();
+
+        console.log(`[${timestampEnd}] ← Response ${status} - ${duration}ms`);
+    });
+
+    next(); // Continuar al siguiente middleware o ruta
 };
 
 export default LoggerMiddleware;

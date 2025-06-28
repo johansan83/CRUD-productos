@@ -1,51 +1,71 @@
-// app.ts
-import express from "express";
-import { Request, Response } from "express";
+// ─── src/app.ts
+
+import express, { Request, Response } from "express";
 import * as dotenv from "dotenv";
 import * as dotenvSafe from "dotenv-safe";
 import cors from "cors";
-import productRouter from "./routes/products/productsRoutes";
-import LoggerMiddleware from "./middlewares/logger";
-import errorHandler from "./middlewares/errorHandler";
-import authRouter from "./routes/auth/authRoutes";
-import authenticateToken from "./middlewares/auth";
 
-dotenv.config();
-dotenvSafe.config();
+import productRouter from "./routes/products/productsRoutes"; // Rutas para CRUD de productos
+import authRouter from "./routes/auth/authRoutes"; // Rutas de autenticación (login)
+import LoggerMiddleware from "./middlewares/logger"; // Registro de peticiones
+import authenticateToken from "./middlewares/auth"; // Validación JWT
+import errorHandler from "./middlewares/errorHandler"; // Captura y formatea errores
 
-const port = parseInt(process.env.PORT as string, 10) || 3000;
-const apiKey = process.env.API_KEY as string;
+dotenv.config(); // Carga variables de entorno desde .env
+dotenvSafe.config(); // Verifica que las variables obligatorias estén definidas
+
 const app = express();
-//const options: = process.env.CORS_OPTIONS;
+const port = parseInt(process.env.PORT as string, 10) || 3000;
 
-//app.use(cors(CORS_OPTIONS));
-// Middlewares
-app.use(LoggerMiddleware);
-app.use(express.json());
+// Configuración CORS
+const corsOptionsEnv = process.env.CORS_OPTIONS || "";
+const allowedOrigins = corsOptionsEnv.split(",").map((o) => o.trim());
 
-// Rutas
-app.use("/products", productRouter);
+const corsOptions = {
+  origin: (
+    origin: string | undefined,
+    callback: (err: Error | null, ok?: boolean) => void
+  ) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true); // Permitir si es Postman o frontend en lista blanca
+    } else {
+      callback(new Error(`CORS: origen ${origin} no permitido`));
+    }
+  },
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+  optionsSuccessStatus: 200,
+};
+app.use(cors(corsOptions)); // Habilita CORS con configuración personalizada
 
-// Ruta de prueba para generar un error intencional
+// Middlewares globales
+app.use(LoggerMiddleware); // Log de peticiones (método, URL, tiempo, etc.)
+app.use(express.json()); // Parseo automático de JSON en el body
+
+// Rutas principales
+app.use("/products", productRouter); // CRUD productos: GET, POST, PUT, DELETE
+app.use("/auth", authRouter); // Autenticación: login
+
+// Ruta para generación intencional de error (testing de errorHandler)
 app.get("/error", (req, res, next) => {
-  // Aquí usamos next() para pasar el error al siguiente middleware (el manejador de errores)
   next(new Error("Error intencional"));
 });
 
-app.use("/auth", authRouter);
-
-app.get("/profile", authenticateToken, (req, res) => {
+// Ruta protegida: devuelve perfil del usuario si el token JWT es válido
+app.get("/profile", authenticateToken, (req: Request, res: Response) => {
   res.json({ user: req.user });
 });
 
-// Ruta principal
+// Ruta raíz pública
 app.get("/", (req, res) => {
   res.send("Imprimir en pantalla");
 });
 
-// Middleware de manejo de errores (al final, después de todas las rutas)
+// Manejador de errores al final de todas las rutas
 app.use(errorHandler);
 
+// Arranque del servidor
 app.listen(port, () => {
   console.log(`App listening on http://localhost:${port}`);
 });
